@@ -23,8 +23,18 @@ phases:
     commands:
       - echo Start build...
       - echo $CODEBUILD_SRC_DIR
-      - cd $CODEBUILD_SRC_DIR && go build
-  post_build:
-    commands:
-      - echo Start post_build...
-      - aws s3 cp $CODEBUILD_SRC_DIR/golang-deployment-pipeline s3://bicarakan-gopher-artifacts/
+  #    - cd $CODEBUILD_SRC_DIR && go build
+      - go build -o app
+  #post_build:
+  #  commands:
+  #    - echo Start post_build...
+  #    - aws s3 cp $CODEBUILD_SRC_DIR/golang-deployment-pipeline s3://bicarakan-gopher-artifacts/
+
+artifacts:
+  files:
+    - app
+    - appspec.yml
+    - buildspec.yml
+    - config/*
+    - codedeploy/*
+    - cloudformation/*
