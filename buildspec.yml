@@ -24,7 +24,7 @@ phases:
       - echo Start build...
       - echo $CODEBUILD_SRC_DIR
   #    - cd $CODEBUILD_SRC_DIR && go build
-      - go build -o app
+      - go build
   #post_build:
   #  commands:
   #    - echo Start post_build...
