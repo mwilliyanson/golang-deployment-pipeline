@@ -1,35 +1,29 @@
-InstanceRole:
-  Type: AWS::IAM::Role
-  Properties:
-    AssumeRolePolicyDocument:
-      Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-              - ec2.amazonaws.com
-          Action:
-            - sts:AssumeRole
-    Path: /
+version: 0.2
 
-InstanceRolePolicies:
-  Type: AWS::IAM::Policy
-  Properties:
-    PolicyName: InstanceRole
-    PolicyDocument:
-      Statement:
-        - Effect: Allow
-          Action:
-            - autoscaling:Describe*
-            - cloudformation:Describe*
-            - cloudformation:GetTemplate
-            - s3:Get*
-          Resource: '*'
-    Roles:
-      - !Ref 'InstanceRole'
+env:
+  variables:
+    GO_VERSION: 1.16.5
+phases:
+  install:
+    commands:
+      - wget https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz
+      - tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
+      - export PATH="/usr/local/go/bin:$PATH" && export GOPATH="$HOME/go" && export PATH="$GOPATH/bin:$PATH"
+      - go get -v -u golang.org/x/lint/golint
 
-InstanceRoleInstanceProfile:
-  Type: AWS::IAM::InstanceProfile
-  Properties:
-    Path: /
-    Roles:
-      - !Ref 'InstanceRole'
+  pre_build: 
+    commands:
+      - echo Start pre_build...
+      # Ensure code passes all lint tests
+      - golint -set_exit_status
+
+      # Run all tests included with our application
+      - go test
+  build:
+    commands:
+      - echo Start build...
+      - cd $CODEBUILD_SRC_DIR && go build
+  post_build:
+    commands:
+      - echo Start post_build...
+      - aws s3 cp $CODEBUILD_SRC_DIR/main s3://bucket-name/
