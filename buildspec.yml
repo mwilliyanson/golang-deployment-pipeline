@@ -1,31 +1,35 @@
-version: 0.1
-            
-phases:
+InstanceRole:
+  Type: AWS::IAM::Role
+  Properties:
+    AssumeRolePolicyDocument:
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              - ec2.amazonaws.com
+          Action:
+            - sts:AssumeRole
+    Path: /
 
-  install: 
-    commands:
-      - go get -u golang.org/x/lint/golint
+InstanceRolePolicies:
+  Type: AWS::IAM::Policy
+  Properties:
+    PolicyName: InstanceRole
+    PolicyDocument:
+      Statement:
+        - Effect: Allow
+          Action:
+            - autoscaling:Describe*
+            - cloudformation:Describe*
+            - cloudformation:GetTemplate
+            - s3:Get*
+          Resource: '*'
+    Roles:
+      - !Ref 'InstanceRole'
 
-  pre_build: 
-    commands:
-
-      # Ensure code passes all lint tests
-      - golint -set_exit_status
-
-      # Run all tests included with our application
-      - go test
-
-  build:
-    commands:
-
-      # Build our application
-      - go build -o app
-
-artifacts:
-  files:
-    - app
-    - appspec.yml
-    - buildspec.yml
-    - config/*
-    - codedeploy/*
-    - cloudformation/*
+InstanceRoleInstanceProfile:
+  Type: AWS::IAM::InstanceProfile
+  Properties:
+    Path: /
+    Roles:
+      - !Ref 'InstanceRole'
