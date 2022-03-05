@@ -3,7 +3,6 @@ version: 0.2
 env:
   variables:
     GO_VERSION: 1.16.5
-    CODEBUILD_SRC_DIR : 
 phases:
   install:
     commands:
